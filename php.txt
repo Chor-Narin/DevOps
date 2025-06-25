@@ -1,0 +1,13 @@
+# Access the web container
+kubectl exec -it laravel-mysql-deployment-6899b46864-s7tz8 -c laravel-web -- bash
+
+# Inside container, run:
+php -m > /var/www/html/php-modules.txt
+
+# Exit container, then copy file locally
+kubectl cp laravel-mysql-deployment-6899b46864-s7tz8:/var/www/html/php-modules.txt ./php-modules.txt -c laravel-web
+
+# Add to git
+git add php-modules.txt
+git commit -m "Add PHP modules list"
+git push origin main

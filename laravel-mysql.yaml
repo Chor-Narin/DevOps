@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-mysql
+  template:
+    metadata:
+      labels:
+        app: laravel-mysql
+    spec:
+      containers:
+        - name: laravel-web
+          image: chornarin/laravel-custom:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "127.0.0.1"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: "chornarin-db"
+            - name: DB_USERNAME
+              value: "root"
+            - name: DB_PASSWORD
+              value: "Hello@123"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  ["/bin/sh", "-c", "sleep 30 && php artisan migrate --force"]
+
+        - name: mysql-db
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "Hello@123"
+            - name: MYSQL_DATABASE
+              value: "chornarin-db"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+          readinessProbe:
+            exec:
+              command:
+                [
+                  "mysqladmin",
+                  "ping",
+                  "-h",
+                  "127.0.0.1",
+                  "-uroot",
+                  "-pHello@123",
+                ]
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+      volumes:
+        - name: mysql-storage
+          emptyDir: {}

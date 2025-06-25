@@ -1,0 +1,13 @@
+# Access MySQL container
+kubectl exec -it laravel-mysql-deployment-6899b46864-s7tz8 -c mysql-db -- bash
+
+# Inside container, run:
+echo "show tables;" | mysql -u root -pHello@123 kimsrenghai-db > /var/lib/mysql/mysql-tables.txt
+
+# Exit container, then copy file locally
+kubectl cp laravel-mysql-deployment-6899b46864-s7tz8:/var/lib/mysql/mysql-tables.txt ./mysql-tables.txt -c mysql-db
+
+# Add to git
+git add mysql-tables.txt
+git commit -m "Add MySQL tables list"
+git push origin main
