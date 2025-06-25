@@ -71,8 +71,18 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "secure-http": false
     },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://203.95.199.55:8081/repository/composer-proxy-i4/"
+        },
+        {
+            "repo.packagist.org": false
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true
 }

@@ -1,0 +1,97 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: laravel-app-deployment
+#   labels:
+#     app: laravel-app
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: laravel-app
+#   template:
+#     metadata:
+#       labels:
+#         app: laravel-app
+#     spec:
+#       containers:
+#       - name: web-server
+#         image: php:8.2-fpm
+#         ports:
+#         - containerPort: 8080
+#           name: http
+#         - containerPort: 22
+#           name: ssh
+#         command: ["/bin/sh", "-c"]
+#         args:
+#         - |
+#           apt-get update && apt-get install -y nginx git openssh-server &&
+#           mkdir -p /var/www/html &&
+#           git clone --branch main https://github.com/Chor-Narin/DevOps.git /var/www/html &&
+#           cd /var/www/html &&
+#           composer install &&
+#           cp .env.example .env &&
+#           sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env &&
+#           sed -i 's/DB_HOST=.*/DB_HOST=mysql-container/' .env &&
+#           sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env &&
+#           sed -i 's/DB_DATABASE=.*/DB_DATABASE=laravelFinal/' .env &&
+#           sed -i 's/DB_USERNAME=.*/DB_USERNAME=narin/' .env &&
+#           sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=1234/' .env &&
+#           php artisan key:generate &&
+#           php artisan migrate &&
+#           service ssh start &&
+#           echo "server { listen 8080; root /var/www/html/public; index index.php; location / { try_files \$uri \$uri/ /index.php?\$query_string; } location ~ \.php$ { include fastcgi_params; fastcgi_pass 127.0.0.1:9000; fastcgi_index index.php; fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name; } }" > /etc/nginx/sites-available/default &&
+#           service nginx start &&
+#           php-fpm
+#         env:
+#         - name: DB_HOST
+#           value: mysql-container
+#         - name: DB_DATABASE
+#           value: laravelFinal
+#         - name: DB_USERNAME
+#           value: narin
+#         - name: DB_PASSWORD
+#           value: "1234"
+#         volumeMounts:
+#         - name: laravel-storage
+#           mountPath: /var/www/html/storage
+#       - name: mysql-container
+#         image: mysql:8.0
+#         ports:
+#         - containerPort: 3306
+#           name: mysql
+#         env:
+#         - name: MYSQL_DATABASE
+#           value: laravelFinal
+#         - name: MYSQL_USER
+#           value: narin
+#         - name: MYSQL_PASSWORD
+#           value: "1234"
+#         - name: MYSQL_ROOT_PASSWORD
+#           value: "1234"
+#         volumeMounts:
+#         - name: mysql-storage
+#           mountPath: /var/lib/mysql
+#       volumes:
+#       - name: laravel-storage
+#         emptyDir: {}
+#       - name: mysql-storage
+#         emptyDir: {}
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: laravel-app-service
+# spec:
+#   selector:
+#     app: laravel-app
+#   ports:
+#   - name: http
+#     protocol: TCP
+#     port: 80
+#     targetPort: 8080
+#   - name: ssh
+#     protocol: TCP
+#     port: 22
+#     targetPort: 22
+#   type: ClusterIP
